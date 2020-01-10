@@ -1,0 +1,1 @@
+export type TBubble = 'bot_message' | 'bot_role' | 'bot_seniority' | 'user_message' | 'unknown'

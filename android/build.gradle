@@ -1,0 +1,62 @@
+buildscript {
+    ext {
+        buildToolsVersion = "28.0.3"
+        minSdkVersion = 23
+        compileSdkVersion = 28
+        targetSdkVersion = 28
+
+        gradleVersion = '3.4.2'
+        multidexVersion = '2.0.1'
+        crashlyticsVersion = '2.10.1@aar'
+        fabricVersion = '1.+'
+    }
+    repositories {
+        google()
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+        maven { url 'https://maven.fabric.io/public' }
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:$gradleVersion")
+        classpath("io.fabric.tools:gradle:$fabricVersion")
+    }
+}
+
+allprojects {
+    repositories {
+        mavenLocal()
+        maven {
+            url("$rootDir/../node_modules/react-native/android")
+        }
+        maven {
+            url("$rootDir/../node_modules/jsc-android/dist")
+        }
+        google()
+        jcenter()
+        maven { url 'https://jitpack.io' }
+        maven {
+            url 'https://maven.fabric.io/public'
+        }
+    }
+}
+
+subprojects { subproject ->
+    afterEvaluate {
+        if ((subproject.plugins.hasPlugin('android') || subproject.plugins.hasPlugin('android-library'))) {
+            android {
+                variantFilter { variant ->
+                    def names = variant.flavors*.name
+                    if (names.contains("reactNative51")
+                            || names.contains("reactNative55")
+                            || names.contains("reactNative56")
+                            || names.contains("reactNative57")
+                            || names.contains("reactNative57_5")
+                            || names.contains("reactNative57WixFork")) {
+                        setIgnore(true)
+                    }
+                }
+            }
+        }
+    }
+}
