@@ -16,7 +16,6 @@ const text: TextStyle = {
 
 const styles = StyleSheet.create<Style>({
     container: {
-        height: 32,
         backgroundColor: colors.black,
         borderRadius: 6,
         width: '100%',

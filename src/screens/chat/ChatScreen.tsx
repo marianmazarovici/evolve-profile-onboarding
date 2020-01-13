@@ -3,7 +3,7 @@ import styles from './styles'
 import { Options } from 'react-native-navigation'
 import { waitForRenderOptions } from '../../utils/navigationUtils'
 import Toolbar from '../../components/toolbar/Toolbar'
-import { KeyboardAvoidingView, StatusBar, Text, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, StatusBar, Text, View } from 'react-native'
 import Chat from './components/chat/Chat'
 import { inject, observer } from 'mobx-react'
 import ChatStore, { DELAY } from '../../store/chatStore'
@@ -15,6 +15,10 @@ import { IReactionDisposer, reaction, toJS } from 'mobx'
 import { IChatSection } from '../../store/model/IChatSection'
 import * as Animatable from 'react-native-animatable'
 import { containsKeyword } from '../../utils/utils'
+import { USE_STORYBOOK } from '../../appConstants'
+import { colors } from '../../assets/colors'
+import baseStyles from '../../components/baseStyles'
+import LinearGradient from 'react-native-linear-gradient'
 
 export const ANIMATION_DURATION: number = 1000
 
@@ -32,7 +36,12 @@ const ChatScreen = ({ chatStore }: Props): ReactElement => {
     const handleRolePress = (index: number) => chatStore.setRole(roles[index])
     const handleSeniorityItemPress = (index: number) =>
         chatStore.setSeniorityItem(seniorityItems[index])
-    const handleSendPress = () => {}
+    const handleSendPress = () =>
+        inputValue &&
+        chatStore.setRole({
+            title: inputValue,
+            id: 0,
+        })
 
     useEffect(() => {
         let roleTimeout: NodeJS.Timeout = null
@@ -70,41 +79,53 @@ const ChatScreen = ({ chatStore }: Props): ReactElement => {
     }, [])
 
     return (
-        <KeyboardAvoidingView behavior={'padding'} style={styles.container}>
-            <StatusBar barStyle={'light-content'} />
-            <Toolbar />
-            <View style={styles.chatContainer}>
-                <Chat data={toJS(conversation)} />
-            </View>
-            {roleVisible ? (
-                <>
-                    {containsKeyword(inputValue, keyword) ? (
-                        <Animatable.View animation={'bounceInRight'} duration={ANIMATION_DURATION}>
-                            <>
-                                <Text style={styles.suggestedRoles}>
-                                    {i18n.t('SUGGESTED ROLES')}
-                                </Text>
-                                <View>
-                                    <RolesList data={toJS(roles)} onItemPress={handleRolePress} />
-                                </View>
-                            </>
-                        </Animatable.View>
-                    ) : null}
-                    <View style={styles.inputContainer}>
-                        <Input
-                            textInputProps={{ onChangeText: handleTextChange }}
-                            value={inputValue}
-                            keyword={keyword}
-                            onSendPress={handleSendPress}
-                        />
-                    </View>
-                </>
-            ) : null}
-            <SeniorityModal
-                isVisible={modalVisible}
-                data={toJS(seniorityItems)}
-                onItemPress={handleSeniorityItemPress}
-            />
+        <KeyboardAvoidingView
+            behavior={'padding'}
+            enabled={Platform.OS === 'ios'}
+            style={styles.container}>
+            <LinearGradient
+                colors={USE_STORYBOOK ? ['white', 'white'] : colors.backgroundGradient}
+                style={baseStyles.container}>
+                <StatusBar barStyle={'light-content'} />
+                <Toolbar />
+                <View style={styles.chatContainer}>
+                    <Chat data={toJS(conversation)} />
+                </View>
+                {roleVisible ? (
+                    <>
+                        {containsKeyword(inputValue, keyword) ? (
+                            <Animatable.View
+                                animation={'bounceInRight'}
+                                duration={ANIMATION_DURATION}>
+                                <>
+                                    <Text style={styles.suggestedRoles}>
+                                        {i18n.t('SUGGESTED ROLES')}
+                                    </Text>
+                                    <View>
+                                        <RolesList
+                                            data={toJS(roles)}
+                                            onItemPress={handleRolePress}
+                                        />
+                                    </View>
+                                </>
+                            </Animatable.View>
+                        ) : null}
+                        <View style={styles.inputContainer}>
+                            <Input
+                                textInputProps={{ onChangeText: handleTextChange }}
+                                value={inputValue}
+                                keyword={keyword}
+                                onSendPress={handleSendPress}
+                            />
+                        </View>
+                    </>
+                ) : null}
+                <SeniorityModal
+                    isVisible={modalVisible}
+                    data={toJS(seniorityItems)}
+                    onItemPress={handleSeniorityItemPress}
+                />
+            </LinearGradient>
         </KeyboardAvoidingView>
     )
 }
